@@ -1,11 +1,10 @@
 {
-  "name": "lace-shop",
+  "name": "lace_shop",
   "version": "1.0.0",
   "main": "index.js",  "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "pages:build": "NODE_ENV=production next build",
+    "start": "next start",    "pages:build": "set NODE_ENV=production&& next build",
     "pages:dev": "wrangler pages dev .next --kv=PRODUCTS",
     "pages:deploy": "wrangler pages deploy .next",
     "deploy": "npm run pages:build && npm run pages:deploy"
