@@ -1,24 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import LoginForm from '../components/LoginForm'
-import fs from 'fs'
-import path from 'path'
 
-export function getServerSideProps() {
-  const filePath = path.join(process.cwd(), 'data/prodotti.json')
-  const data = JSON.parse(fs.readFileSync(filePath))
-  return {
-    props: {
-      prodotti: data
-    }
-  }
-}
-
-export default function Admin({ prodotti: prodottiIniziali }) {
+export default function Admin() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [prodotti, setProdotti] = useState(prodottiIniziali)
+  const [prodotti, setProdotti] = useState([])
   const [formData, setFormData] = useState({
     slug: '',
     titolo: '',
@@ -31,19 +19,18 @@ export default function Admin({ prodotti: prodottiIniziali }) {
   const [uploading, setUploading] = useState(false)
   const [videoPreview, setVideoPreview] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-  const [errors, setErrors] = useState({
-    slug: '',
-    titolo: '',
-    prezzo: '',
-    videoUrl: '',
-    linkVinted: ''
-  })
 
-  // Check if user is authenticated by checking the cookie
+  // Check if user is authenticated and fetch products
   useEffect(() => {
     const cookies = document.cookie.split(';')
     const isAdminCookie = cookies.find(cookie => cookie.trim().startsWith('isAdmin='))
     setIsAuthenticated(!!isAdminCookie)
+
+    // Fetch products
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => setProdotti(data))
+      .catch(error => console.error('Error fetching products:', error))
   }, [])
 
   const handleDelete = async (prodotto) => {

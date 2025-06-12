@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Cambiato da 'standalone' a 'export' per Cloudflare Pages
+  output: 'standalone',  // Cambiato da 'export' a 'standalone' per supportare SSR
   images: {
     unoptimized: true
   },
-  // Disabilita il controllo del trailing slash per la compatibilità con Cloudflare Pages
   trailingSlash: false
 }
 
