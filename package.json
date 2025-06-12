@@ -5,8 +5,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "pages:deploy": "wrangler pages publish ./out",
-    "deploy": "npm run build && npm run pages:deploy"
+    "pages:build": "next build",
+    "pages:deploy": "wrangler pages publish .next",
+    "deploy": "npm run pages:build && npm run pages:deploy"
   },
   "repository": {
     "type": "git",
