@@ -5,8 +5,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "pages:build": "next build",
-    "pages:deploy": "wrangler pages publish .next",
+    "pages:build": "NODE_ENV=production next build",
+    "pages:dev": "wrangler pages dev .next --kv=PRODUCTS",
+    "pages:deploy": "wrangler pages deploy .next",
     "deploy": "npm run pages:build && npm run pages:deploy"
   },
   "repository": {
