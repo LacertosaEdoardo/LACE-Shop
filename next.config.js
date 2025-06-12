@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',  // Cambiato da 'export' a 'standalone' per supportare SSR
+  output: 'export',
   images: {
     unoptimized: true
   },
-  trailingSlash: false
+  trailingSlash: true,
+  distDir: 'out'
 }
 
 module.exports = nextConfig

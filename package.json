@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start"
   },
   "repository": {
@@ -21,16 +21,14 @@
   "homepage": "https://github.com/LacertosaEdoardo/LACE-Shop#readme",
   "description": "",
   "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "formidable": "^3.5.4",
-    "next": "^15.3.3",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "next": "13.4.12",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "formidable": "^3.5.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.10",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.5",
-    "tailwindcss": "^4.1.10"
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3"
   }
 }
