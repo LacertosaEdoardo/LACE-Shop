@@ -1,12 +1,10 @@
 name = "lace-shop"
+main = ".next/server/pages/api/_worker.js"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".next"
 
 [build]
-command = "npm run pages:build"
-
-[build.upload]
-format = "service-worker"
+command = "NODE_ENV=production npm run pages:build"
 
 [site]
 bucket = ".next"
@@ -14,18 +12,6 @@ bucket = ".next"
 [functions]
 directory = "functions"
 
-# Configurazione Pages
-pages_build_output_dir = ".next"
-
-# Configurazioni per l'ambiente di produzione
-[env.production]
-name = "lace-shop"
-
-# Configurazioni KV e R2
 [[kv_namespaces]]
 binding = "PRODUCTS"
 id = "PRODUCTS"
-
-[[r2_buckets]]
-binding = "VIDEOS"
-bucket_name = "lace-shop-videos"
