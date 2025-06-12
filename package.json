@@ -1,12 +1,12 @@
 {
   "name": "lace-shop",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+  "main": "index.js",  "scripts": {
     "dev": "next dev",
-    "build": "next build && next export",
-    "start": "next start"
+    "build": "next build",
+    "start": "next start",
+    "pages:deploy": "wrangler pages publish ./out",
+    "deploy": "npm run build && npm run pages:deploy"
   },
   "repository": {
     "type": "git",
@@ -21,14 +21,18 @@
   "homepage": "https://github.com/LacertosaEdoardo/LACE-Shop#readme",
   "description": "",
   "dependencies": {
+    "formidable": "3.5.1",
     "next": "13.4.12",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "formidable": "^3.5.1"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27",
-    "tailwindcss": "^3.3.3"
+    "@cloudflare/kv-asset-handler": "^0.4.0",
+    "@cloudflare/wrangler": "^1.21.0",
+    "autoprefixer": "10.4.14",
+    "postcss": "8.4.27",
+    "postcss-flexbugs-fixes": "^5.0.2",
+    "tailwindcss": "3.3.3",
+    "wrangler": "^4.20.0"
   }
 }

@@ -3,23 +3,13 @@ import { useState } from 'react'
 export default function LoginForm({ onLogin }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      })
-
-      if (res.ok) {
-        onLogin()
-      } else {
-        setError('Credenziali non valide')
-      }
-    } catch (error) {
-      setError('Errore durante il login')
+    if (credentials.username === 'admin' && credentials.password === 'admin') {
+      localStorage.setItem('isAdmin', 'true')
+      onLogin()
+    } else {
+      setError('Credenziali non valide')
     }
   }
 
@@ -64,7 +54,7 @@ export default function LoginForm({ onLogin }) {
 
         <button
           type="submit"
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Accedi
         </button>

@@ -1,9 +1,16 @@
 [
   {
-    "slug": "felpa-vintage",
-    "titolo": "Felpa Vintage",
-    "prezzo": 29.99,
-    "videoUrl": "/videos/video-prodotto.mp4",
-    "linkVinted": "https://www.vinted.it/..."
+    "slug": "a",
+    "titolo": "a",
+    "prezzo": 1,
+    "videoUrl": "/videos/1749738699634-Stan Ray - Jean .mp4",
+    "linkVinted": "https://www.vinted.it/"
+  },
+  {
+    "slug": "b",
+    "titolo": "a",
+    "prezzo": 1,
+    "videoUrl": "/videos/1749739131995-Stan Ray - Jean .mp4",
+    "linkVinted": "https://www.vinted.it/"
   }
 ]

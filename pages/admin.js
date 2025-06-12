@@ -19,40 +19,112 @@ export default function Admin() {
   const [uploading, setUploading] = useState(false)
   const [videoPreview, setVideoPreview] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-
-  // Check if user is authenticated and fetch products
+  const [errors, setErrors] = useState({})
   useEffect(() => {
-    const cookies = document.cookie.split(';')
-    const isAdminCookie = cookies.find(cookie => cookie.trim().startsWith('isAdmin='))
-    setIsAuthenticated(!!isAdminCookie)
+    const isAdmin = localStorage.getItem('isAdmin') === 'true'
+    setIsAuthenticated(isAdmin)
 
-    // Fetch products
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => setProdotti(data))
-      .catch(error => console.error('Error fetching products:', error))
+    // Load products from JSON file
+    import('../data/prodotti.json')
+      .then(module => {
+        const data = module.default || []
+        setProdotti(Array.isArray(data) ? data : [])
+      })
+      .catch(error => {
+        console.error('Error loading products:', error)
+        setProdotti([])
+      })
   }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
+    try {
+      setUploading(true)
+      setMessage('Caricamento in corso...')
+
+      // Handle video file upload
+      let videoUrl = '/videos/video-prodotto.mp4'
+      if (videoFile) {
+        const formData = new FormData()
+        formData.append('video', videoFile)
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadRes.ok) {
+          throw new Error('Errore nel caricamento del video')
+        }
+
+        const { videoUrl: uploadedUrl } = await uploadRes.json()
+        videoUrl = uploadedUrl
+      }      // Create new product
+      const newProduct = {
+        ...formData,
+        videoUrl,
+        prezzo: parseFloat(formData.prezzo)
+      }
+
+      // Add product through API
+      const productRes = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProduct)
+      });
+
+      if (!productRes.ok) {
+        const error = await productRes.json();
+        throw new Error(error.error || 'Errore nel salvataggio del prodotto');
+      }
+
+      const savedProduct = await productRes.json()
+
+      // Update local state with the saved product
+      setProdotti(prevProdotti => [...prevProdotti, savedProduct])
+      
+      setMessage('Prodotto aggiunto con successo!')
+      
+      // Reset form
+      setFormData({
+        slug: '',
+        titolo: '',
+        prezzo: '',
+        videoUrl: '',
+        linkVinted: ''
+      })
+      setVideoFile(null)
+      setVideoPreview(null)
+      setShowForm(false)
+      
+    } catch (error) {
+      setMessage('Errore: ' + error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleDelete = async (prodotto) => {
     if (deleteConfirm === prodotto.slug) {
       try {
         const res = await fetch('/api/deleteProduct', {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            slug: prodotto.slug,
-            videoUrl: prodotto.videoUrl
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: prodotto.slug })
         })
 
-        if (res.ok) {
-          setProdotti(prev => prev.filter(p => p.slug !== prodotto.slug))
-          setMessage('Prodotto eliminato con successo')
-        } else {
+        if (!res.ok) {
           throw new Error('Errore durante l\'eliminazione')
         }
+
+        setProdotti(prev => prev.filter(p => p.slug !== prodotto.slug))
+        setMessage('Prodotto eliminato con successo')
+        
       } catch (error) {
         setMessage('Errore: ' + error.message)
       }
@@ -94,93 +166,53 @@ export default function Admin() {
       [name]: ''
     }))
   }
-
   const validateForm = () => {
     const newErrors = {}
     
+    // Validazione titolo
+    if (!formData.titolo.trim()) {
+      newErrors.titolo = 'Il titolo è obbligatorio'
+    }
+    
     // Validazione slug
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.slug)) {
+    if (!formData.slug.trim()) {
+      newErrors.slug = 'Lo slug è obbligatorio'
+    } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.slug)) {
       newErrors.slug = 'Lo slug può contenere solo lettere minuscole, numeri e trattini'
+    }
+    
+    // Check if slug is unique
+    if (prodotti.some(p => p.slug === formData.slug)) {
+      newErrors.slug = 'Questo slug è già in uso'
     }
 
     // Validazione prezzo
-    if (isNaN(formData.prezzo) || formData.prezzo <= 0) {
+    const price = parseFloat(formData.prezzo)
+    if (isNaN(price) || price <= 0) {
       newErrors.prezzo = 'Inserisci un prezzo valido maggiore di 0'
     }
 
     // Validazione URL Vinted
-    if (!formData.linkVinted.startsWith('https://www.vinted.it/')) {
+    if (!formData.linkVinted.trim()) {
+      newErrors.linkVinted = 'Il link Vinted è obbligatorio'
+    } else if (!formData.linkVinted.startsWith('https://www.vinted.it/')) {
       newErrors.linkVinted = 'L\'URL deve iniziare con https://www.vinted.it/'
+    }
+
+    // Validazione video
+    if (!videoFile && !videoPreview) {
+      newErrors.video = 'Il video è obbligatorio'
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    try {
-      setUploading(true)
-      setMessage('Caricamento in corso...')
-      
-      // Prima carica il video se presente
-      if (videoFile) {
-        const videoFormData = new FormData()
-        videoFormData.append('video', videoFile)
-        
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: videoFormData,
-        })
-        
-        if (!uploadRes.ok) {
-          throw new Error('Errore nel caricamento del video')
-        }
-        
-        const { videoUrl } = await uploadRes.json()
-        // Aggiorna il formData con l'URL del video generato dal server
-        const updatedFormData = {
-          ...formData,
-          videoUrl: videoUrl // Questo sarà il nuovo nome del file generato dal server
-        }
-
-        // Salva il prodotto con il nuovo URL del video
-        const productRes = await fetch('/api/products', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updatedFormData),
-        })
-
-        if (productRes.ok) {
-          setMessage('Prodotto aggiunto con successo!')
-          setFormData({
-            slug: '',
-            titolo: '',
-            prezzo: '',
-            videoUrl: '',
-            linkVinted: ''
-          })
-          setVideoFile(null)
-          setVideoPreview(null)
-          setTimeout(() => {
-            router.push('/')
-          }, 2000)
-        } else {
-          throw new Error('Errore durante l\'aggiunta del prodotto')
-        }
-      }
-    } catch (error) {
-      setMessage('Errore: ' + error.message)
-    } finally {
-      setUploading(false)
-    }
-  }
-
   if (!isAuthenticated) {
-    return <LoginForm onLogin={() => setIsAuthenticated(true)} />
+    return <LoginForm onLogin={() => {
+      setIsAuthenticated(true)
+      localStorage.setItem('isAdmin', 'true')
+    }} />
   }
 
   return (

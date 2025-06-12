@@ -1,31 +1,62 @@
 import fs from 'fs'
 import path from 'path'
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
-  
-  // Check if user is authenticated
-  if (!req.cookies.isAdmin) {
-    return res.status(401).json({ message: 'Unauthorized' })
-  }
+export default async function handler(req, res) {
+  const productsPath = path.join(process.cwd(), 'data', 'prodotti.json')
 
   try {
-    const filePath = path.join(process.cwd(), 'data/prodotti.json')
-    const fileData = fs.readFileSync(filePath)
-    const products = JSON.parse(fileData)
+    // Ensure file exists with valid array
+    if (!fs.existsSync(productsPath)) {
+      fs.writeFileSync(productsPath, '[]', 'utf8')
+    }
 
-    // Add new product
-    const newProduct = req.body
-    products.push(newProduct)
+    // Read current products array
+    let products = []
+    const fileContents = fs.readFileSync(productsPath, 'utf8')
+    try {
+      products = JSON.parse(fileContents)
+      if (!Array.isArray(products)) {
+        products = []
+      }
+    } catch (error) {
+      console.error('Error parsing products file:', error)
+      products = []
+    }
 
-    // Write back to file
-    fs.writeFileSync(filePath, JSON.stringify(products, null, 2))
+    if (req.method === 'GET') {
+      return res.status(200).json(products)
+    } 
+    
+    if (req.method === 'POST') {
+      const newProduct = req.body
+      
+      // Validate new product
+      if (!newProduct || !newProduct.slug || !newProduct.titolo || 
+          typeof newProduct.prezzo !== 'number' || !newProduct.linkVinted) {
+        return res.status(400).json({ error: 'Dati del prodotto non validi' })
+      }
 
-    res.status(200).json({ message: 'Prodotto aggiunto con successo' })
+      // Check for duplicate slug
+      if (products.some(p => p.slug === newProduct.slug)) {
+        return res.status(400).json({ error: 'Esiste già un prodotto con questo slug' })
+      }
+
+      // Add new product to array      // Add new product to array
+      products.push(newProduct)
+      
+      // Save the updated array back to the file
+      try {
+        fs.writeFileSync(productsPath, JSON.stringify(products, null, 2), 'utf8')
+        return res.status(200).json(newProduct)
+      } catch (error) {
+        console.error('Error saving products file:', error)
+        return res.status(500).json({ error: 'Errore nel salvataggio del prodotto' })
+      }
+    }
+
+    return res.status(405).json({ error: 'Metodo non consentito' })
   } catch (error) {
-    console.error('Error adding product:', error)
-    res.status(500).json({ message: 'Errore durante l\'aggiunta del prodotto' })
+    console.error('Error handling products:', error)
+    return res.status(500).json({ error: 'Errore del server' })
   }
 }
