@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: 'export', // Cambiato da 'standalone' a 'export' per Cloudflare Pages
   images: {
     unoptimized: true
   },
-  // Configura i domini consentiti per le immagini, se necessario
-  images: {
-    domains: ['localhost']
-  }
+  // Disabilita il controllo del trailing slash per la compatibilità con Cloudflare Pages
+  trailingSlash: false
 }
 
 module.exports = nextConfig
